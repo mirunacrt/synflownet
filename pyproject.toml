@@ -1,0 +1,106 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.distutils.bdist_wheel]
+universal = "true"
+
+[tool.bandit]
+# B101 tests the use of assert
+# B301 and B403 test the use of pickle
+skips = ["B101", "B301", "B403"]
+exclude_dirs = ["tests", ".tox", ".venv"]
+
+[tool.pytest.ini_options]
+addopts = [
+    "-v",
+    "-x",
+    "--color=yes",
+    "--cov-report=term-missing",
+    "--cov=gflownet",
+    "--typeguard-packages=ml_kit,tests"
+]
+testpaths = ["tests"]
+pythonpath = "src/"
+
+[tool.mypy]
+ignore_missing_imports = true
+show_error_codes = true
+show_error_context = true
+show_traceback = true
+strict = false
+strict_optional = false
+implicit_reexport = true
+allow_redefinition = true
+files = "src"
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+allow_untyped_defs = true
+allow_incomplete_defs = true
+
+[tool.isort]
+profile = "black"
+py_version = "auto"
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[project]
+name = "gflownet"
+readme = "README.md"
+classifiers = ["Operating System :: OS Independent", "Programming Language :: Python", "Programming Language :: Python :: 3"]
+keywords = ["gflownet"]
+requires-python = ">=3.10,<3.11"
+dynamic = ["version"]
+dependencies = [
+    "torch==2.1.2",
+    "torch-geometric==2.4.0",
+    "torch-scatter==2.1.2",
+    "torch-sparse==0.6.18",
+    "torch-cluster==1.6.3",
+    "rdkit",
+    "tables",
+    "scipy",
+    "networkx",
+    "tensorboard",
+    "cvxopt",
+    "pyarrow",
+    "gitpython",
+    "botorch",
+    "pyro-ppl",
+    "gpytorch",
+    "omegaconf>=2.3",
+    "wandb",
+    "seaborn",
+    "matplotlib",
+    "pandas",
+    "lightning",
+]
+
+[project.optional-dependencies]
+dev = [
+    "bandit[toml]",
+    "black",
+    "isort",
+    "mypy",
+    "pip-compile-cross-platform",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "tox",
+    "typeguard",
+    "types-pkg_resources",
+    # Security pin
+    "gitpython>=3.1.30",
+]
+
+[[project.authors]]
+name = "Recursion Pharmaceuticals"
+email = "devs@recursionpharma.com"
+
+[tool.ruff]
+line-length = 120
