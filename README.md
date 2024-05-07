@@ -4,7 +4,7 @@
 
 ![GFlowNet](docs/synflownet_logo.png)
 
-# SynFlowNet - Towards molecule design with garentueed synthesis pathways
+# SynFlowNet - Towards molecule design with guaranteed synthesis pathways
 
 Official implementation of SynFlowNet, a GFlowNet model with a synthesis action space, by Miruna Cretu, Charles Harris, Julien Roy, Emmanuel Bengio and Pietro Liò.
 
