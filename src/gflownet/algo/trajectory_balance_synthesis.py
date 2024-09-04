@@ -93,7 +93,7 @@ class TrajectoryBalance(GFNAlgorithm):
         ----------
         env: ReactionTemplateEnv
             A synthesis environment.
-        ctx: ReaxtionTemplateEnvContext
+        ctx: ReactionTemplateEnvContext
             A context.
         cfg: Config
             Hyperparameters
