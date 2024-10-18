@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Any, List, Optional
 
+from gflownet.utils.misc import StrictDataClass
+
 
 @dataclass
-class TempCondConfig:
+class TempCondConfig(StrictDataClass):
     """Config for the temperature conditional.
 
     Attributes
@@ -28,13 +30,13 @@ class TempCondConfig:
 
 
 @dataclass
-class MultiObjectiveConfig:
-    num_objectives: int = 2
+class MultiObjectiveConfig(StrictDataClass):
+    num_objectives: int = 2  # TODO: Change that as it can conflict with cfg.task.seh_moo.num_objectives
     num_thermometer_dim: int = 16
 
 
 @dataclass
-class WeightedPreferencesConfig:
+class WeightedPreferencesConfig(StrictDataClass):
     """Config for the weighted preferences conditional.
 
     Attributes
@@ -47,10 +49,11 @@ class WeightedPreferencesConfig:
         - None: All rewards equally weighted"""
 
     preference_type: Optional[str] = "dirichlet"
+    preference_param: Optional[float] = 1.5
 
 
 @dataclass
-class FocusRegionConfig:
+class FocusRegionConfig(StrictDataClass):
     """Config for the focus region conditional.
 
     Attributes
@@ -60,7 +63,7 @@ class FocusRegionConfig:
         [None, "centered", "partitioned", "dirichlet", "hyperspherical", "learned-gfn", "learned-tabular"]
     """
 
-    focus_type: Optional[str] = "learned-tabular"
+    focus_type: Optional[str] = "centered"
     use_steer_thermomether: bool = False
     focus_cosim: float = 0.98
     focus_limit_coef: float = 0.1
@@ -70,8 +73,9 @@ class FocusRegionConfig:
 
 
 @dataclass
-class ConditionalsConfig:
-    temperature: TempCondConfig = TempCondConfig()
-    moo: MultiObjectiveConfig = MultiObjectiveConfig()
-    weighted_prefs: WeightedPreferencesConfig = WeightedPreferencesConfig()
-    focus_region: FocusRegionConfig = FocusRegionConfig()
+class ConditionalsConfig(StrictDataClass):
+    valid_sample_cond_info: bool = True
+    temperature: TempCondConfig = field(default_factory=TempCondConfig)
+    moo: MultiObjectiveConfig = field(default_factory=MultiObjectiveConfig)
+    weighted_prefs: WeightedPreferencesConfig = field(default_factory=WeightedPreferencesConfig)
+    focus_region: FocusRegionConfig = field(default_factory=FocusRegionConfig)

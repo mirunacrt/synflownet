@@ -2,7 +2,7 @@
 
 (Updated from [recursionpharma/gflownet](https://github.com/recursionpharma/gflownet/blob/trunk/docs/implementation_notes.md))
 
-This repo is centered around training GFlowNets that produce molecules from sequentially applying chemical reactions to reactants (building blocks). The building blocks were made available by Enamine upon request and the reaction templates are modified _Hartenfeller-Button_ reaction templates. The building blocks are not freely available and can be obtained upon request from [enamine.net/building-blocks/building-blocks-catalog](https://enamine.net/building-blocks/building-blocks-catalog). We used the "Global stock" data and selected 6000 random molecules from here to train the model.
+This repo is centered around training GFlowNets that produce molecules from sequentially applying chemical reactions to reactants (building blocks). The building blocks were made available by Enamine upon request and the reaction templates are modified _Hartenfeller-Button_ reaction templates. 
 
 ## Environment, Context, Task, Trainers
 

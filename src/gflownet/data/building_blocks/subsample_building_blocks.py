@@ -14,10 +14,8 @@ def parse_bool(b):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Subsample building blocks")
-    parser.add_argument(
-        "--filename", type=str, help="Path to input building blocks", default="short_building_blocks.txt"
-    )
-    parser.add_argument("--n", type=int, help="Number of building blocks to subsample", default=6000)
+    parser.add_argument("--filename", type=str, help="Path to input building blocks", default="building_blocks.txt")
+    parser.add_argument("--n", type=int, help="Number of building blocks to subsample", default=5000)
     parser.add_argument(
         "--random",
         type=parse_bool,

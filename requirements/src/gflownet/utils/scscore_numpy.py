@@ -34,7 +34,7 @@ FP_rad = 2
 
 
 def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
+    return 1 / (1 + np.exp(-x))  # Use np.exp, which can handle arrays
 
 
 class SCScorer:
@@ -131,7 +131,7 @@ class SCScorer:
 
 if __name__ == "__main__":
     model = SCScorer()
-    model.restore(str(Path(__file__).parent / "cache" / "scscorer_model.ckpt-10654.as_numpy.pickle"))
+    model.restore(str(Path(__file__).parent.parent / "models" / "cache" / "scscorer_model.ckpt-10654.as_numpy.pickle"))
     smis = ["CCCOCCC", "CCCNc1ccccc1"]
     for smi in smis:
         (smi, sco) = model.get_score_from_smi(smi)

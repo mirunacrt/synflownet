@@ -61,9 +61,12 @@ dependencies = [
     "torch-scatter==2.1.2",
     "torch-sparse==0.6.18",
     "torch-cluster==1.6.3",
+    "PyTDC==1.0.7",
     "rdkit",
     "tables",
     "scipy",
+    "meeko",
+    "numpy",
     "networkx",
     "tensorboard",
     "cvxopt",
@@ -74,10 +77,7 @@ dependencies = [
     "gpytorch",
     "omegaconf>=2.3",
     "wandb",
-    "seaborn",
-    "matplotlib",
-    "pandas",
-    "lightning",
+    "pandas", 
 ]
 
 [project.optional-dependencies]
