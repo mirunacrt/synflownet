@@ -8,7 +8,7 @@
 
 # SynFlowNet - Design of Diverse and Novel Molecules with Synthesis Constraints
 
-Official implementation of SynFlowNet, a GFlowNet model with a synthesis action space.
+Official implementation of SynFlowNet, a GFlowNet model with a synthesis action space. The paper is available on [arxiv](https://arxiv.org/abs/2405.01155).
 
 **Primer**
 
