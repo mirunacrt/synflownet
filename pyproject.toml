@@ -17,7 +17,7 @@ addopts = [
     "-x",
     "--color=yes",
     "--cov-report=term-missing",
-    "--cov=gflownet",
+    "--cov=synflownet",
     "--typeguard-packages=ml_kit,tests"
 ]
 testpaths = ["tests"]
@@ -49,10 +49,10 @@ line-length = 120
 target-version = ["py310"]
 
 [project]
-name = "gflownet"
+name = "synflownet"
 readme = "README.md"
 classifiers = ["Operating System :: OS Independent", "Programming Language :: Python", "Programming Language :: Python :: 3"]
-keywords = ["gflownet"]
+keywords = ["synflownet"]
 requires-python = ">=3.10,<3.11"
 dynamic = ["version"]
 dependencies = [
