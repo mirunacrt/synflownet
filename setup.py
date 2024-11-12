@@ -25,4 +25,4 @@ def _get_next_version():
     return f"{major}.{minor}.{latest_patch+1}"
 
 
-setup(name="gflownet", version=_get_next_version())
+setup(name="synflownet", version=_get_next_version())
