@@ -1,18 +1,11 @@
-
-
-[![arXiv](https://img.shields.io/badge/arXiv-1234.56789-b31b1b.svg)](https://arxiv.org/abs/2405.01155)
-[![Python versions](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/downloads/)
-[![license: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
-
 ![GFlowNet](docs/synflownet_logo.png)
 
 # SynFlowNet - Design of Diverse and Novel Molecules with Synthesis Constraints
 
-Official implementation of SynFlowNet, a GFlowNet model with a synthesis action space. The paper is available on [arxiv](https://arxiv.org/abs/2405.01155).
 
 **Primer**
 
-SynFlowNet is a GFlowNet model that generates molecules from chemical reactions and available building blocks. This repo contains instructions for how to train SynFlowNet and sample synthesisable molecules with probability proportional to a reward specified by the user. The code builds upon the [recursionpharma/gflownet](https://github.com/recursionpharma/gflownet) codebase, available under the [MIT](https://github.com/recursionpharma/gflownet/blob/trunk/LICENSE) license. For a primer and repo overview visit [recursionpharma/gflownet](https://github.com/recursionpharma/gflownet).
+SynFlowNet is a GFlowNet model that generates molecules from chemical reactions and available building blocks. This repo contains instructions for how to train SynFlowNet and sample synthesisable molecules with probability proportional to a reward specified by the user. 
 
 ![GFlowNet](docs/concept.png)
 
@@ -37,7 +30,7 @@ pip install -e . --find-links https://data.pyg.org/whl/torch-2.1.2+cpu.html
 
 ### Data
 
-The training relies on two data sources: reaction templates and building blocks. Filenames are specified in the `ReactionTaskConfig`. The model uses pre-computed masks to ensure compatibility between the building blocks and the reaction templates. Instructions for preprocessing building blocks and for computing masks can be found in [synflownet/data/building_blocks](https://github.com/recursionpharma/synflownet/tree/miruna-cleanup/synflownet/data/building_blocks).
+The training relies on two data sources: reaction templates and building blocks. Filenames are specified in the `ReactionTaskConfig`. The model uses pre-computed masks to ensure compatibility between the building blocks and the reaction templates. Instructions for preprocessing building blocks and for computing masks can be found in `synflownet/data/building_blocks`.
 
 ### Reward
 
@@ -78,16 +71,3 @@ The data used for training the GFlowNet can come from multiple sources:
 - Generating new trajectories on-policy from _s_0_
 - Generating new trajectories on-policy backwards from samples stored in a replay buffer (for training the backwards policy with REINFORCE)
 - Sampling trajectories from a fixed, offline dataset
-
-# Citation
-
-If you use this code in your research, please cite the following paper:
-
-```
-@article{cretu2024synflownet,
-      title={SynFlowNet: Design of Diverse and Novel Molecules with Synthesis Constraints},
-      author={Miruna Cretu, Charles Harris, Ilia Igashov, Arne Schneuing, Marwin Segler, Bruno Correia, Julien Roy, Emmanuel Bengio and Pietro Liò},
-      journal={arXiv preprint arXiv},
-      year={2024}
-}
-```
