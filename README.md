@@ -37,7 +37,7 @@ pip install -e . --find-links https://data.pyg.org/whl/torch-2.1.2+cpu.html
 
 ### Data
 
-The training relies on two data sources: reaction templates and building blocks. Filenames are specified in the `ReactionTaskConfig`. The model uses pre-computed masks to ensure compatibility between the building blocks and the reaction templates. Instructions for preprocessing building blocks and for computing masks can be found in [synflownet/data/building_blocks](https://github.com/recursionpharma/synflownet/tree/miruna-cleanup/synflownet/data/building_blocks).
+The training relies on two data sources: reaction templates and building blocks. Filenames are specified in the `ReactionTaskConfig`. The model uses pre-computed masks to ensure compatibility between the building blocks and the reaction templates. Instructions for preprocessing building blocks and for computing masks can be found in [synflownet/data/building_blocks](https://github.com/mirunacrt/synflownet/tree/main/src/synflownet/data/building_blocks).
 
 ### Reward
 
