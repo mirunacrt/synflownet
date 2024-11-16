@@ -8,7 +8,6 @@ import rdkit.Chem as Chem
 from meeko import MoleculePreparation, PDBQTMolecule, PDBQTWriterLegacy, RDKitMolCreate
 from rdkit import RDLogger
 from rdkit.Chem import rdDistGeom
-from useful_rdkit_utils import get_center
 
 from synflownet.tasks.config import VinaConfig
 
