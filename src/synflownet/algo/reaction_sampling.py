@@ -107,7 +107,8 @@ class SynthesisSampler(Sampler):
                 if graph_actions[j].action is GraphActionType.Stop:
                     done[i] = True
                     if not self.cfg.algo.tb.do_parameterize_p_b:
-                        bck_logprob[i].append(torch.tensor([1.0], device=dev).log())
+                        if not self.cfg.algo.method == "SQL":
+                            bck_logprob[i].append(torch.tensor([1.0], device=dev).log())
                     data[i]["is_sink"].append(1)
                     bck_a[i].append(GraphAction(GraphActionType.Stop))
                 else:  # If not done, step the self.environment
@@ -136,7 +137,8 @@ class SynthesisSampler(Sampler):
                         data[i]["is_valid"] = False
                         done[i] = True
                         if not self.cfg.algo.tb.do_parameterize_p_b:
-                            bck_logprob[i].append(torch.tensor([1.0], device=dev).log())
+                            if not self.cfg.algo.method == "SQL":
+                                bck_logprob[i].append(torch.tensor([1.0], device=dev).log())
                         data[i]["is_sink"].append(1)
                         continue
                     try:
@@ -148,21 +150,23 @@ class SynthesisSampler(Sampler):
                         data[i]["is_valid"] = False  # Penalize RDKit errors
                         done[i] = True
                         if not self.cfg.algo.tb.do_parameterize_p_b:
-                            bck_logprob[i].append(torch.tensor([1.0], device=dev).log())
+                            if not self.cfg.algo.method == "SQL":
+                                bck_logprob[i].append(torch.tensor([1.0], device=dev).log())
                         data[i]["is_sink"].append(1)
                         continue
                     g = self.ctx.obj_to_graph(gp)
 
                     if not self.cfg.algo.tb.do_parameterize_p_b:
-                        n_back = self.env.count_backward_transitions(
-                            g, check_idempotent=self.correct_idempotent
-                        )
-                        if n_back > 0:
-                            bck_logprob[i].append(
-                                torch.tensor([1 / n_back], device=dev).log()
+                        if not self.cfg.algo.method == "SQL":
+                            n_back = self.env.count_backward_transitions(
+                                g, check_idempotent=self.correct_idempotent
                             )
-                        else:
-                            bck_logprob[i].append(torch.tensor([0.001], device=dev).log())
+                            if n_back > 0:
+                                bck_logprob[i].append(
+                                    torch.tensor([1 / n_back], device=dev).log()
+                                )
+                            else:
+                                bck_logprob[i].append(torch.tensor([0.001], device=dev).log())
 
                     if t == self.max_len - 1:
                         done[i] = True

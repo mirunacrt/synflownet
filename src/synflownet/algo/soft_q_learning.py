@@ -136,7 +136,6 @@ class SoftQLearning:
         ]
         batch = self.ctx.collate(torch_graphs)
         batch.traj_lens = torch.tensor([len(i["traj"]) for i in trajs])
-        batch.log_p_B = torch.cat([i["bck_logprobs"] for i in trajs], 0)
         # batch.actions = torch.tensor(actions)
         batch.actions = actions
         batch.nx_graphs = nx_graphs
@@ -147,6 +146,12 @@ class SoftQLearning:
         # compute_batch_losses expects these two optional values, if someone else doesn't fill them in, default to 0
         batch.num_offline = 0
         batch.num_online = 0
+
+        if hasattr(self.ctx, 'precompute_secondary_masks'):
+            batch.secondary_masks = self.ctx.precompute_secondary_masks(
+                actions, nx_graphs
+            )
+
         return batch
 
     def _update_lagged_model(self, model):
@@ -202,6 +207,10 @@ class SoftQLearning:
         Q_tilde_lagged, _ = Q_tilde, (
             None if self.lagged_model is None else self.lagged_model(batch, cond_info[batch_idx])
         )
+
+        if hasattr(batch, 'secondary_masks'):
+            for atype, (idcs, mask) in batch.secondary_masks.items():
+                Q_tilde.set_secondary_masks(atype, idcs, mask)
 
         """
         We learn Q_tilde(s,a) = Q(s,a)/alpha & V_tilde(s) = V(s)/alpha for which a simpler loss can be derived that only scales the reward (https://hackmd.io/@U-MDltE4Q_CnZYPu8is08A/rkRWbL8s0).

@@ -213,7 +213,7 @@ class QuickVina2GPU(object):
         config.append(f"size_z = {self.size_z}")
         config.append(f"thread = {self.thread}")
 
-        with open(os.path.join(self.input_dir, "../config.txt"), "w") as f:
+        with open(os.path.join(self.input_dir, "config.txt"), "w") as f:
             f.write("\n".join(config))
 
     def _write_pdbqt_files(self, smiles: List[str]):
@@ -247,7 +247,7 @@ class QuickVina2GPU(object):
     def _run_vina(self):
 
         result = subprocess.run(
-            [self.vina_path, "--config", os.path.join(self.input_dir, "../config.txt")], capture_output=True, text=True
+            [self.vina_path, "--config", os.path.join(self.input_dir, "config.txt")], capture_output=True, text=True
         )
         if self.print_time:
             print(result.stdout.split("\n")[-2])

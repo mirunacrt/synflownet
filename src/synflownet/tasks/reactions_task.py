@@ -30,6 +30,8 @@ from synflownet.utils.conditioning import TemperatureConditional
 from synflownet.utils.gpu_vina import QuickVina2GPU
 from synflownet.utils.misc import get_worker_device
 from synflownet.utils.transforms import to_logreward
+from rdkit.Chem import DataStructs
+from rdkit.Chem import AllChem
 
 # Write any local overrides required here
 LOCAL_OVERRIDES = "local_overrides.yaml"
@@ -104,6 +106,13 @@ class ReactionTask(GFNTask):
         except Exception:
             return default
 
+    def similarity_to_mol(self, graphs: List[gd.Data], mols: List[RDMol]) -> Tensor:
+        ref_mol = Chem.MolFromSmiles("CC(N)CCc1cccc(C(=O)CCC(=O)CCC(=O)c2cccc(CCC(C)N)c2)c1")
+        ref_fp = AllChem.GetMorganFingerprintAsBitVect(ref_mol, 2, 2048)
+        mols_fps = [AllChem.GetMorganFingerprintAsBitVect(m, 2, 2048) for m in mols]
+        similarities = [DataStructs.FingerprintSimilarity(ref_fp, fp) for fp in mols_fps]
+        return torch.tensor(similarities)
+
     def vina_rewards_from_graph(self, graphs: List[gd.Data], mols: List[Chem.Mol]) -> Tensor:
 
         print("Calculating Vina rewards...")
@@ -131,6 +140,41 @@ class ReactionTask(GFNTask):
 
         return torch.tensor(drd2_rewards).float().clip(1e-4, 100)
 
+    def jnk3_rewards_from_graph(self, graphs: List[gd.Data], mols: List[Chem.Mol]) -> Tensor:
+        jnk3 = Oracle("JNK3")
+        smiles = [Chem.MolToSmiles(mol) for mol in mols]
+        jnk3_rewards = [jnk3(s) for s in smiles]
+
+        return torch.tensor(jnk3_rewards).float().clip(1e-4, 100)
+
+    def celecoxib_rediscovery_rewards_from_graph(self, graphs: List[gd.Data], mols: List[Chem.Mol]) -> Tensor:
+        celecoxib_rediscovery = Oracle("celecoxib_rediscovery")
+        smiles = [Chem.MolToSmiles(mol) for mol in mols]
+        celecoxib_rewards = [celecoxib_rediscovery(s) for s in smiles]
+
+        return torch.tensor(celecoxib_rewards).float().clip(1e-4, 100)
+
+    def troglitazone_rediscovery_rewards_from_graph(self, graphs: List[gd.Data], mols: List[Chem.Mol]) -> Tensor:
+        troglitazone_rediscovery = Oracle("troglitazone_rediscovery")
+        smiles = [Chem.MolToSmiles(mol) for mol in mols]
+        troglitazone_rewards = [troglitazone_rediscovery(s) for s in smiles]
+
+        return torch.tensor(troglitazone_rewards).float().clip(1e-4, 100)
+
+    def aripiprazole_similarity_rewards_from_graph(self, graphs: List[gd.Data], mols: List[Chem.Mol]) -> Tensor:
+        aripiprazole_similarity = Oracle("aripiprazole_similarity")
+        smiles = [Chem.MolToSmiles(mol) for mol in mols]
+        aripiprazole_rewards = [aripiprazole_similarity(s) for s in smiles]
+
+        return torch.tensor(aripiprazole_rewards).float().clip(1e-4, 100)
+
+    def thiothixene_rediscovery_rewards_from_graph(self, graphs: List[gd.Data], mols: List[Chem.Mol]) -> Tensor:
+        thiothixene_rediscovery = Oracle("thiothixene_rediscovery")
+        smiles = [Chem.MolToSmiles(mol) for mol in mols]
+        thiothixene_rewards = [thiothixene_rediscovery(s) for s in smiles]
+
+        return torch.tensor(thiothixene_rewards).float().clip(1e-4, 100)
+
     def mol2sas(self, mols: list[RDMol], default=10):
         sas = torch.tensor([self.safe(sascore.calculateScore, i, default) for i in mols])
         # sas = (10 - sas) / 9  # Turn into a [0-1] reward
@@ -148,6 +192,18 @@ class ReactionTask(GFNTask):
             return self.gsk_rewards_from_graph(graphs, mols)
         elif self.reward == "drd2":
             return self.drd2_rewards_from_graph(graphs, mols)
+        elif self.reward == "celecoxib_rediscovery":
+            return self.celecoxib_rediscovery_rewards_from_graph(graphs, mols)
+        elif self.reward == "troglitazone_rediscovery":
+            return self.troglitazone_rediscovery_rewards_from_graph(graphs, mols)
+        elif self.reward == "aripiprazole_similarity":
+            return self.aripiprazole_similarity_rewards_from_graph(graphs, mols)
+        elif self.reward == "thiothixene_rediscovery":
+            return self.thiothixene_rediscovery_rewards_from_graph(graphs, mols)
+        elif self.reward == "jnk3":
+            return self.jnk3_rewards_from_graph(graphs, mols)
+        elif self.reward == "similarity_to_mol":
+            return self.similarity_to_mol(graphs, mols)
         elif self.reward == "reward_one":
             return torch.ones(len([g for g in graphs if g is not None]))
         elif self.reward == "seh_qed":
@@ -348,7 +404,7 @@ def main(wandb_run_name, backoff=False):
         trial = ReactionTrainer.load_from_checkpoint(checkpoint_path)
     else:
         config = init_empty(Config())
-        config.reward = "seh_reaction"  # vina, seh_reaction, gsk, drd2, seh_qed
+        config.reward = "similarity_to_mol"  # vina, seh_reaction, gsk, drd2, seh_qed, celecoxib_rediscovery
         config.print_every = 1
         config.log_dir = f"./logs/debug_run_reactions_task_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
         config.device = "cuda" if torch.cuda.is_available() else "cpu"
