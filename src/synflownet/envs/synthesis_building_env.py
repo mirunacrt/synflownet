@@ -26,8 +26,14 @@ RDLogger.DisableLog("rdApp.*")
 # Load templates and building blocks:
 script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_root = os.path.dirname(script_dir)
-with open(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.building_blocks_filename), "r") as file:
-    BUILDING_BLOCKS = file.read().splitlines()
+
+
+if os.path.exists(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.building_blocks_filename)):
+    with open(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.building_blocks_filename), "r") as file:
+        BUILDING_BLOCKS = file.read().splitlines()
+else:
+    BUILDING_BLOCKS = None
+
 with open(os.path.join(repo_root, "data/templates", ReactionTaskConfig.templates_filename), "r") as file:
     TEMPLATES = file.read().splitlines()
 if ReactionTaskConfig.reverse_templates_filename is not None:
@@ -38,8 +44,13 @@ if ReactionTaskConfig.reverse_templates_filename is not None:
         REVERSE_TEMPLATES = file.read().splitlines()
 else:
     REVERSE_TEMPLATES = None
-with open(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.precomputed_bb_masks_filename), "rb") as f:
-    PRECOMPUTED_BB_MASKS = pickle.load(f)
+
+
+if os.path.exists(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.precomputed_bb_masks_filename)):
+    with open(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.precomputed_bb_masks_filename), "rb") as f:
+        PRECOMPUTED_BB_MASKS = pickle.load(f)
+else:
+    PRECOMPUTED_BB_MASKS = None
 
 if ReactionTaskConfig.building_blocks_costs is not None:
     with open(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.building_blocks_costs), "r") as f:
@@ -108,8 +119,8 @@ class ReactionTemplateEnvContext(GraphBuildingEnvContext):
         num_cond_dim: int = 0,
         reaction_templates: List[str] = TEMPLATES,
         rev_reaction_templates: Optional[List[str]] = REVERSE_TEMPLATES,
-        building_blocks: List[str] = BUILDING_BLOCKS,
-        precomputed_bb_masks: np.ndarray = PRECOMPUTED_BB_MASKS,
+        building_blocks: Optional[List[str]] = BUILDING_BLOCKS,
+        precomputed_bb_masks: Optional[np.ndarray] = PRECOMPUTED_BB_MASKS,
         fp_type: str = None,
         fp_path: str = None,
         add_hs: bool = False,  # NOTE: Needs to be true if using REAL reactions
@@ -179,36 +190,43 @@ class ReactionTemplateEnvContext(GraphBuildingEnvContext):
         else:
             self.reverse_reactions = None
 
-        self.building_blocks = building_blocks
-        self.building_blocks_set = set(building_blocks)
-        self.building_blocks_embs = get_mol_embeddings(building_blocks, fp_type=fp_type, fp_path=fp_path)
-        self.building_blocks_dim = self.building_blocks_embs.shape[1]
-        if ReactionTaskConfig.sanitize_building_blocks:
-            print("Sanitizing building blocks ...")
-            building_blocks_mols = [Chem.MolFromSmiles(bb) for bb in building_blocks]
-            building_blocks_sanitized = []
-            remover = (
-                SaltRemover.SaltRemover()
-            )  # some molecules are salts, we want the sanitized version of them not to have the salt
-            for bb in building_blocks_mols:
-                try:
-                    bb = remover.StripMol(bb)
-                    Chem.RemoveStereochemistry(bb)
-                    building_blocks_sanitized.append(
-                        Chem.MolToSmiles(self.graph_to_obj(self.obj_to_graph(bb)))
-                    )  # graph_to_obj removes stereochemistry
-                except Exception as e:
-                    warnings.warn(f"Failed to sanitize building block {Chem.MolToSmiles(bb)}: {e}")
-            self.building_blocks = building_blocks_sanitized
+        if building_blocks is not None: # avoid circular dependency on file
+            self.building_blocks = building_blocks
+            self.building_blocks_set = set(building_blocks)
+            self.building_blocks_embs = get_mol_embeddings(building_blocks, fp_type=fp_type, fp_path=fp_path)
+            self.building_blocks_dim = self.building_blocks_embs.shape[1]
 
-        if add_hs:
-            self.building_blocks_mols = [Chem.AddHs(Chem.MolFromSmiles(bb)) for bb in self.building_blocks]
+            if ReactionTaskConfig.sanitize_building_blocks:
+                print("Sanitizing building blocks ...")
+                building_blocks_mols = [Chem.MolFromSmiles(bb) for bb in building_blocks]
+                building_blocks_sanitized = []
+                remover = (
+                    SaltRemover.SaltRemover()
+                )  # some molecules are salts, we want the sanitized version of them not to have the salt
+                for bb in building_blocks_mols:
+                    try:
+                        bb = remover.StripMol(bb)
+                        Chem.RemoveStereochemistry(bb)
+                        building_blocks_sanitized.append(
+                            Chem.MolToSmiles(self.graph_to_obj(self.obj_to_graph(bb)))
+                        )  # graph_to_obj removes stereochemistry
+                    except Exception as e:
+                        warnings.warn(f"Failed to sanitize building block {Chem.MolToSmiles(bb)}: {e}")
+                self.building_blocks = building_blocks_sanitized
+
+            if add_hs:
+                self.building_blocks_mols = [Chem.AddHs(Chem.MolFromSmiles(bb)) for bb in self.building_blocks]
+            else:
+                self.building_blocks_mols = [Chem.MolFromSmiles(bb) for bb in self.building_blocks]
+
+            self.num_building_blocks = len(building_blocks)
+
+        if precomputed_bb_masks is not None: # avoids circular dependence
+            self.precomputed_bb_masks = np.bool_(precomputed_bb_masks)
+            self.precomputed_any_bb_reacts = self.precomputed_bb_masks.any(axis=2)
         else:
-            self.building_blocks_mols = [Chem.MolFromSmiles(bb) for bb in self.building_blocks]
-
-        self.num_building_blocks = len(building_blocks)
-        self.precomputed_bb_masks = np.bool_(precomputed_bb_masks)
-        self.precomputed_any_bb_reacts = self.precomputed_bb_masks.any(axis=2)
+            self.precomputed_bb_masks = None
+            self.precomputed_any_bb_reacts = None
         self.bbs_costs = building_blocks_costs
 
         # Order in which models have to output logits
@@ -440,6 +458,10 @@ class ReactionTemplateEnvContext(GraphBuildingEnvContext):
         # Hmm, how would I write the above for all rows at once?
         # I want to return an array of bools, one for each reaction, that says whether any bb can react
         # self.precomputed_any_bb_reacts has shape (2, num_rxns)
+
+        assert self.precomputed_any_bb_reacts is not None,\
+            "`precomputed_any_bb_reacts` is None. Make sure the masks can be found by the class."
+    
         mol = self.get_mol(smi)
         all_matches = np.array([
             [mol.HasSubstructMatch(reactants[1]), mol.HasSubstructMatch(reactants[0])]
