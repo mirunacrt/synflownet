@@ -11,23 +11,33 @@ from synflownet.tasks.config import ReactionTaskConfig
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_root = os.path.dirname(script_dir)
-with open(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.building_blocks_filename), "r") as file:
-    BUILDING_BLOCKS = file.read().splitlines()
+
+if os.path.exists(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.building_blocks_filename)):
+    with open(os.path.join(repo_root, "data/building_blocks", ReactionTaskConfig.building_blocks_filename), "r") as file:
+        BUILDING_BLOCKS = file.read().splitlines()
+else: 
+    BUILDING_BLOCKS = None
+
 building_blocks = BUILDING_BLOCKS
 
-if ReactionTaskConfig.sanitize_building_blocks:
-    building_blocks_sanitized = []
-    building_blocks_mols = [Chem.MolFromSmiles(bb) for bb in building_blocks]
-    remover = (
-        SaltRemover.SaltRemover()
-    )  # some molecules are salts, we want the sanitized version of them not to have the salt
-    for bb in building_blocks_mols:
-        bb = remover.StripMol(bb)
-        Chem.RemoveStereochemistry(bb)
-        building_blocks_sanitized.append(Chem.MolToSmiles(bb))
-    building_blocks_sanitized = set(building_blocks_sanitized)
-else:
-    building_blocks_sanitized = set(building_blocks)
+
+
+
+if building_blocks is not None: # hotfix to avoid circular dependency on file
+
+    if ReactionTaskConfig.sanitize_building_blocks:
+        building_blocks_sanitized = []
+        building_blocks_mols = [Chem.MolFromSmiles(bb) for bb in building_blocks]
+        remover = (
+            SaltRemover.SaltRemover()
+        )  # some molecules are salts, we want the sanitized version of them not to have the salt
+        for bb in building_blocks_mols:
+            bb = remover.StripMol(bb)
+            Chem.RemoveStereochemistry(bb)
+            building_blocks_sanitized.append(Chem.MolToSmiles(bb))
+        building_blocks_sanitized = set(building_blocks_sanitized)
+    else:
+        building_blocks_sanitized = set(building_blocks)
 
 
 def run_reaction_with_fallback(rxn, product):
